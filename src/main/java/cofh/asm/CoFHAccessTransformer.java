@@ -37,6 +37,7 @@ public class CoFHAccessTransformer implements IClassTransformer {
         superClasses.put(null, null);
 
         // file names are case sensitive. do not alter.
+        mapFileList.add("CoFHLib_at.cfg");
         mapFileList.add("CoFH_at.cfg");
         // CoFH_at.cfg must also contain all entries from cofhlib_at.cfg
 
@@ -52,7 +53,7 @@ public class CoFHAccessTransformer implements IClassTransformer {
         if (file.exists()) {
             rulesResource = file.toURI().toURL();
         } else {
-            rulesResource = Resources.getResource(rulesFile);
+            rulesResource = Resources.getResource("META-INF/" + rulesFile);
         }
         processATFile(Resources.asCharSource(rulesResource, Charsets.UTF_8).openStream());
     }
