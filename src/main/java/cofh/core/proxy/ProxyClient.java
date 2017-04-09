@@ -9,10 +9,11 @@ import cofh.core.key.KeyBindingItemMultiMode;
 import cofh.core.key.KeyHandlerCore;
 import cofh.core.render.CustomEffectRenderer;
 import cofh.core.render.FontRendererCore;
+import cofh.core.render.RenderEventHandler;
 import cofh.core.render.ShaderHelper;
 import cofh.core.util.RegistrySocial;
-import cofh.lib.util.helpers.RenderHelper;
 import cofh.lib.util.RayTracer;
+import cofh.lib.util.helpers.RenderHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -35,6 +36,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -67,6 +69,7 @@ public class ProxyClient extends Proxy {
 			CoFHCore.LOG.info("Replacing EffectRenderer - Particles have been disabled.");
 			Minecraft.getMinecraft().effectRenderer = new CustomEffectRenderer();
 		}
+		MinecraftForge.EVENT_BUS.register(RenderEventHandler.instance);
 	}
 
 	@Override
@@ -147,9 +150,9 @@ public class ProxyClient extends Proxy {
 
 				RenderHelper.bindTexture(UNDERWATER_GRAYSCALE);
 				float brightness = player.getBrightness(event.getRenderPartialTicks());
-				Vec3d colour = ((IFogOverlay) block).getFog(state, player, 0.0F, 0.0F, 0.0F).scale(brightness);
+				Vec3d color = ((IFogOverlay) block).getFog(state, player, 0.0F, 0.0F, 0.0F).scale(brightness);
 
-				GlStateManager.color((float) colour.xCoord, (float) colour.yCoord, (float) colour.zCoord, 0.5F);
+				GlStateManager.color((float) color.xCoord, (float) color.yCoord, (float) color.zCoord, 0.5F);
 				GlStateManager.enableBlend();
 				GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
 				GlStateManager.pushMatrix();

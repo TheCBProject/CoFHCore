@@ -1,8 +1,5 @@
 package cofh.core.world;
 
-import cofh.lib.world.IFeatureGenerator;
-import cofh.lib.world.IFeatureParser;
-import cofh.lib.world.IGeneratorParser;
 import cofh.asm.ASMCore;
 import cofh.core.init.CoreProps;
 import cofh.core.util.CoreUtils;
@@ -18,6 +15,9 @@ import cofh.lib.util.numbers.ConstantProvider;
 import cofh.lib.util.numbers.INumberProvider;
 import cofh.lib.util.numbers.SkellamRandomProvider;
 import cofh.lib.util.numbers.UniformRandomProvider;
+import cofh.lib.world.IFeatureGenerator;
+import cofh.lib.world.IFeatureParser;
+import cofh.lib.world.IGeneratorParser;
 import cofh.lib.world.WorldGenMulti;
 import cofh.lib.world.biome.BiomeInfo;
 import cofh.lib.world.biome.BiomeInfoRarity;
@@ -228,7 +228,7 @@ public class FeatureParser {
 		}
 	}
 
-	public static void parseGenerationFile() {
+	public static void parseGenerationFiles() {
 
 		ArrayList<File> worldGenList = new ArrayList<>(5);
 		{
@@ -307,6 +307,7 @@ public class FeatureParser {
 				}
 				log.info("Finished reading %s", file);
 			} else {
+
 			}
 		}
 	}
@@ -821,7 +822,7 @@ public class FeatureParser {
 					log.error("Invalid ore name for item at line %d!", genElement.origin().lineNumber());
 					return null;
 				}
-				ItemStack oreStack = OreDictionary.getOres(oreName).get(0);
+				ItemStack oreStack = OreDictionary.getOres(oreName, false).get(0);
 				stack = ItemHelper.cloneStack(oreStack, stackSize);
 			} else {
 				if (!item.hasPath("name")) {

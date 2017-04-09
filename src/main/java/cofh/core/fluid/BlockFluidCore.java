@@ -1,10 +1,10 @@
 package cofh.core.fluid;
 
-import cofh.core.util.core.IInitializer;
-import cofh.core.render.IModelRegister;
 import cofh.core.block.IFogOverlay;
-import cofh.core.util.StateMapper;
+import cofh.core.render.IModelRegister;
 import cofh.core.render.particle.EntityDropParticleFX;
+import cofh.core.util.StateMapper;
+import cofh.core.util.core.IInitializer;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -217,7 +217,7 @@ public abstract class BlockFluidCore extends BlockFluidClassic implements IIniti
 	}
 
 	/* IFogOverlay */
-	public Vec3d getFog(IBlockState state, Entity renderViewEntity, float fogColourRed, float fogColourGreen, float fogColourBlue) {
+	public Vec3d getFog(IBlockState state, Entity renderViewEntity, float fogColorRed, float fogColorGreen, float fogColorBlue) {
 
 		return new Vec3d(particleRed, particleGreen, particleBlue);
 	}

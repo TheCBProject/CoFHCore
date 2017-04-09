@@ -3,15 +3,18 @@ package cofh.core.block;
 import cofh.api.block.IBlockInfo;
 import cofh.api.block.IDismantleable;
 import cofh.api.core.ISecurable;
-import cofh.core.util.core.IInitializer;
 import cofh.api.energy.IEnergyReceiver;
-import cofh.api.tileentity.*;
+import cofh.api.tileentity.IReconfigurableFacing;
+import cofh.api.tileentity.ITileInfo;
 import cofh.core.util.CoreUtils;
+import cofh.core.util.core.IInitializer;
 import cofh.core.util.helpers.RedstoneControlHelper;
 import cofh.core.util.helpers.SecurityHelper;
 import cofh.core.util.tileentity.IInventoryRetainer;
 import cofh.core.util.tileentity.IRedstoneControl;
-import cofh.lib.util.helpers.*;
+import cofh.lib.util.helpers.MathHelper;
+import cofh.lib.util.helpers.ServerHelper;
+import cofh.lib.util.helpers.StringHelper;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -34,7 +37,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -193,7 +195,7 @@ public abstract class BlockCoreTile extends BlockCore implements ITileEntityProv
 		if (tile instanceof ISecurable && !((ISecurable) tile).canPlayerAccess(player)) {
 			return -1;
 		}
-		return ForgeHooks.blockStrength(world.getBlockState(pos), player, world, pos);
+		return state.getPlayerRelativeBlockHardness(player, world, pos);
 	}
 
 	@Override
@@ -226,7 +228,7 @@ public abstract class BlockCoreTile extends BlockCore implements ITileEntityProv
 	public boolean eventReceived(IBlockState state, World world, BlockPos pos, int id, int param) {
 
 		TileEntity tile = world.getTileEntity(pos);
-		return tile != null ? tile.receiveClientEvent(id, param) : false;
+		return tile != null && tile.receiveClientEvent(id, param);
 	}
 
 	@Override

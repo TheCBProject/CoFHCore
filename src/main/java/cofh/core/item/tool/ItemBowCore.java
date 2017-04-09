@@ -1,12 +1,13 @@
 package cofh.core.item.tool;
 
 import cofh.core.init.CoreEnchantments;
+import cofh.core.item.IEnchantableItem;
+import cofh.core.item.IFOVUpdateItem;
 import cofh.lib.util.helpers.ItemHelper;
 import cofh.lib.util.helpers.MathHelper;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnumEnchantmentType;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -24,13 +25,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class ItemBowCore extends ItemBow {
+public class ItemBowCore extends ItemBow implements IEnchantableItem, IFOVUpdateItem {
 
 	protected String repairIngot = "";
 	protected ToolMaterial toolMaterial;
 
 	protected float arrowDamageMultiplier = 0.0F;
 	protected float arrowSpeedMultiplier = 0.0F;
+	protected float zoomMultiplier = 0.15F;
 
 	protected boolean showInCreative = true;
 
@@ -48,7 +50,7 @@ public class ItemBowCore extends ItemBow {
 					return 0.0F;
 				} else {
 					ItemStack itemstack = entityIn.getActiveItemStack();
-					return itemstack != null && itemstack.getItem() instanceof ItemBow ? (float) (stack.getMaxItemUseDuration() - entityIn.getItemInUseCount()) / 20.0F : 0.0F;
+					return itemstack != null && itemstack.getItem() instanceof ItemBowCore ? (float) (stack.getMaxItemUseDuration() - entityIn.getItemInUseCount()) / 20.0F : 0.0F;
 				}
 			}
 		});
@@ -59,17 +61,6 @@ public class ItemBowCore extends ItemBow {
 				return entityIn != null && entityIn.isHandActive() && entityIn.getActiveItemStack() == stack ? 1.0F : 0.0F;
 			}
 		});
-	}
-
-	public int cofh_canEnchantApply(ItemStack stack, Enchantment ench) {
-
-		if (ench == Enchantments.LOOTING) {
-			return 1;
-		}
-		if (ench.type == EnumEnchantmentType.BOW) {
-			return 1;
-		}
-		return -1;
 	}
 
 	public ItemBowCore setRepairIngot(String repairIngot) {
@@ -87,6 +78,12 @@ public class ItemBowCore extends ItemBow {
 	public ItemBowCore setArrowSpeed(float multiplier) {
 
 		this.arrowSpeedMultiplier = multiplier;
+		return this;
+	}
+
+	public ItemBowCore setZoomMultiplier(float multiplier) {
+
+		this.zoomMultiplier = multiplier;
 		return this;
 	}
 
@@ -148,16 +145,16 @@ public class ItemBowCore extends ItemBow {
 		if (livingBase instanceof EntityPlayer) {
 			EntityPlayer entityplayer = (EntityPlayer) livingBase;
 			boolean flag = entityplayer.capabilities.isCreativeMode || EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, stack) > 0;
-			ItemStack itemstack = this.findAmmo(entityplayer);
+			ItemStack arrowStack = this.findAmmo(entityplayer);
 
 			int i = this.getMaxItemUseDuration(stack) - timeLeft;
-			i = net.minecraftforge.event.ForgeEventFactory.onArrowLoose(stack, world, (EntityPlayer) livingBase, i, itemstack != null || flag);
+			i = net.minecraftforge.event.ForgeEventFactory.onArrowLoose(stack, world, (EntityPlayer) livingBase, i, arrowStack != null || flag);
 			if (i < 0) {
 				return;
 			}
-			if (itemstack != null || flag) {
-				if (itemstack == null) {
-					itemstack = new ItemStack(Items.ARROW);
+			if (arrowStack != null || flag) {
+				if (arrowStack == null) {
+					arrowStack = new ItemStack(Items.ARROW);
 				}
 				float f = getArrowVelocity(i);
 				float speedMod = 1 + arrowSpeedMultiplier;
@@ -171,10 +168,9 @@ public class ItemBowCore extends ItemBow {
 						onBowFired(entityplayer, stack);
 
 						for (int shot = 0; shot <= enchantMultishot; shot++) {
-							ItemArrow itemarrow = (ItemArrow) (itemstack.getItem() instanceof ItemArrow ? itemstack.getItem() : Items.ARROW);
-							EntityArrow arrow = itemarrow.createArrow(world, itemstack, entityplayer);
-							arrow.setAim(entityplayer, entityplayer.rotationPitch, entityplayer.rotationYaw, 0.0F, f * 3.0F, 1.0F);
-							arrow.setVelocity(arrow.motionX * speedMod, arrow.motionY * speedMod, arrow.motionZ * speedMod);
+							ItemArrow itemarrow = (ItemArrow) (arrowStack.getItem() instanceof ItemArrow ? arrowStack.getItem() : Items.ARROW);
+							EntityArrow arrow = itemarrow.createArrow(world, arrowStack, entityplayer);
+							arrow.setAim(entityplayer, entityplayer.rotationPitch, entityplayer.rotationYaw, 0.0F, f * 3.0F * speedMod, 1.0F);
 							arrow.setDamage(arrow.getDamage() * (1 + arrowDamageMultiplier));
 
 							if (f >= 1.0F) {
@@ -199,10 +195,10 @@ public class ItemBowCore extends ItemBow {
 					world.playSound(null, entityplayer.posX, entityplayer.posY, entityplayer.posZ, SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.NEUTRAL, 1.0F, 1.0F / (itemRand.nextFloat() * 0.4F + 1.2F) + f * 0.5F);
 
 					if (!flag) {
-						--itemstack.stackSize;
+						--arrowStack.stackSize;
 
-						if (itemstack.stackSize == 0) {
-							entityplayer.inventory.deleteStack(itemstack);
+						if (arrowStack.stackSize == 0) {
+							entityplayer.inventory.deleteStack(arrowStack);
 						}
 					}
 					entityplayer.addStat(StatList.getObjectUseStats(this));
@@ -213,6 +209,21 @@ public class ItemBowCore extends ItemBow {
 
 	public void onBowFired(EntityPlayer player, ItemStack stack) {
 
+	}
+
+	/* IEnchantableItem */
+	@Override
+	public boolean canEnchant(ItemStack stack, Enchantment enchantment) {
+
+		return enchantment == CoreEnchantments.multishot;
+	}
+
+	/* IFOVUpdateItem */
+	@Override
+	public float getFOVMod(ItemStack stack, EntityPlayer player) {
+
+		float progress = MathHelper.clamp((stack.getMaxItemUseDuration() - player.getItemInUseCount()) / 20.0F, 0, 1.0F);
+		return progress * progress * zoomMultiplier;
 	}
 
 }
