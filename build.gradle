@@ -12,6 +12,7 @@ buildscript {
 		    name = "covers1624"
 		    url = "http://mavenmirror.covers1624.net/forge/"
 		}
+		mavenCentral()
 		maven {
 		    name = "forge"
 		    url = "http://files.minecraftforge.net/maven"
